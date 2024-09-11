@@ -511,3 +511,96 @@ let vv: vector<vector<u8>> = vector[
 - `length`: Returns the number of elements in the vector.
 - `is_empty`: Returns true if the vector is empty.
 - `remove`: Removes an element at a given index.
+
+
+
+### Option
+
+Option是一种表示可选值的类型，该值可能存在，也可能不存在。
+
+```rust
+struct Option<Element> has copy, drop, store {
+    vec: vector<Element>
+}
+```
+
+`Option`是一个泛型类型，它接受一个类型参数`Element`。它有一个单一的领域`vec`这是一`个``向量`的元素。向量的长度可以为0或1，这用于表示值的存在或不存在。
+
+
+
+
+
+### String
+
+虽然Move没有内置的类型来表示字符串，但它[在标准库](https://move-book.com/move-basics/standard-library.html)中有两个标准的字符串实现。`std：：string`模块为UTF-8编码的字符串定义了`String`类型和方法，第二个模块`std：：asktop`提供了ASCII`String`类型及其方法。
+
+无论你使用哪种类型的字符串，重要的是要知道字符串只是字节。
+
+
+
+#### Creating a String
+
+```rust
+// the module is `std::string` and the type is `String`
+use std::string::{Self, String};
+
+// strings are normally created using the `utf8` function
+// type declaration is not necessary, we put it here for clarity
+let hello: String = string::utf8(b"Hello");
+
+// The `.to_string()` alias on the `vector<u8>` is more convenient
+let hello = b"Hello".to_string();
+
+```
+
+
+
+
+
+UTF8 String提供了许多处理字符串的方法。字符串上最常见的操作是：串联，切片和获取长度。此外，对于自定义字符串操作，可以使用`bytes（）`方法获取底层字节向量。
+
+
+
+
+
+### Control Flow
+
+和一般语法的控制流都差不多
+
+- [`if` and `if-else`](https://move-book.com/move-basics/control-flow.html#conditional-statements) - making decisions on whether to execute a block of code
+- [`loop` and `while` loops](https://move-book.com/move-basics/control-flow.html#repeating-statements-with-loops) - repeating a block of code
+- [`break` and `continue` statements](https://move-book.com/move-basics/control-flow.html#exiting-a-loop-early) - exiting a loop early
+- [`return`](https://move-book.com/move-basics/control-flow.html#return) statement - exiting a function early
+
+
+
+### Constants
+
+常量是在模块级别定义的不可变值。它们通常用作为整个模块中使用的静态值命名的一种方式。例如，如果一个产品有一个默认价格，你可以为它定义一个常量，常量存储在模块的字节码中，每次使用时，值都会被复制。
+
+```rust
+/// Price of the item used at the shop.
+const ITEM_PRICE: u64 = 100;
+
+/// Error constant.
+const EItemNotFound: u64 = 1;
+
+```
+
+一个常见用例是定义一组在整个代码库中使用的常量。但是由于常量是模块私有的，它们不能从其他模块访问。解决这个问题的一种方法是定义一个导出常量的“config”模块。
+
+```rust
+module book::config {
+    const ITEM_PRICE: u64 = 100;
+    const TAX_RATE: u64 = 10;
+    const SHIPPING_COST: u64 = 5;
+
+    /// Returns the price of an item.
+    public fun item_price(): u64 { ITEM_PRICE }
+    /// Returns the tax rate.
+    public fun tax_rate(): u64 { TAX_RATE }
+    /// Returns the shipping cost.
+    public fun shipping_cost(): u64 { SHIPPING_COST }
+}
+```
+
