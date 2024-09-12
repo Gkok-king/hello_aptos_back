@@ -604,3 +604,67 @@ module book::config {
 }
 ```
 
+
+
+### function
+
+函数是Move程序的构建块。它们从用户事务和其他函数调用，并将可执行代码分组为可重用单元。函数可以接受参数并返回值。它们是在模块级别用fun关键字声明的。就像任何其他模块成员一样，默认情况下它们是私有的，只能从模块内部访问。
+
+
+
+```rust
+module book::math {
+
+    public fun add(a: u64, b: u64): u64 {
+        a + b
+    }
+
+    #[test]
+    fun test_add() {
+        let sum = add(1, 2);
+        assert!(sum == 3, 0);
+    }
+}
+```
+
+
+
+#### Multiple return values
+
+```rust
+fun get_name_and_age(): (vector<u8>, u8) {
+    (b"John", 25)
+}
+//如果任何声明的值需要声明为可变的，则将mut关键字放在变量名之前：
+let (mut name, age) = get_name_and_age();
+// 如果某些参数未被使用，则可以使用_符号忽略它们：
+let (_, age) = get_name_and_age();
+```
+
+
+
+
+
+
+
+### Generics
+
+泛型可用于在不同的输入数据类型上定义函数和结构。这种语言特性有时被称为*参数多态性*。在Move中，我们经常将术语泛型与类型参数和类型实参互换使用。
+
+泛型通常用在库代码中，比如vector中，用来声明在任何可能的实例化（满足指定的约束）上工作的代码。在其他框架中，泛型代码有时可以用于以许多不同的方式与全局存储进行交互，这些方式仍然共享相同的实现。
+
+
+
+#### Generic Structs
+
+```rust
+module 0x42::example {
+  struct Foo<T> has copy, drop { x: T }
+ 
+  struct Bar<T1, T2> has copy, drop {
+    x: T1,
+    y: vector<T2>,
+  }
+}
+```
+
