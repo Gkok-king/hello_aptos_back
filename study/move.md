@@ -645,6 +645,52 @@ let (_, age) = get_name_and_age();
 
 
 
+### Struct Methods
+
+Move语法支持*接收器语法*，它允许定义可以在结构的实例上调用的方法。这与其他编程语言中的方法语法类似。这是一种方便的方法来定义函数，这些函数对结构的字段进行操作。
+
+
+
+如果函数的第一个参数是模块内部的结构，则可以使用`。`操作符.如果函数使用来自另一个模块的结构体，则方法默认不会与该结构体关联。在这种情况下，可以使用标准函数调用语法调用函数。
+
+```rust
+module book::hero {
+    /// A struct representing a hero.
+    public struct Hero has drop {
+        health: u8,
+        mana: u8,
+    }
+
+    /// Create a new Hero.
+    public fun new(): Hero { Hero { health: 100, mana: 100 } }
+
+    /// A method which casts a spell, consuming mana.
+    public fun heal_spell(hero: &mut Hero) {
+        hero.health = hero.health + 10;
+        hero.mana = hero.mana - 10;
+    }
+
+    /// A method which returns the health of the hero.
+    public fun health(hero: &Hero): u8 { hero.health }
+
+    /// A method which returns the mana of the hero.
+    public fun mana(hero: &Hero): u8 { hero.mana }
+
+    #[test]
+    // Test the methods of the `Hero` struct.
+    fun test_methods() {
+        let mut hero = new();
+        hero.heal_spell();
+
+        assert!(hero.health() == 110, 1);
+        assert!(hero.mana() == 90, 2);
+    }
+}
+
+```
+
+
+
 
 
 ### Generics
