@@ -485,6 +485,8 @@ module book::imports {
 
 ### Vector
 
+理解为一个动态数组
+
 使用`vector`关键字以及尖括号中的元素类型来定义`vector`类型。元素的类型可以是任何有效的Move类型，包括其他向量。Move有一个vector literal语法，允许您使用`vector`关键字后跟包含元素的方括号（或者对于空vector没有元素）来创建vector。
 
 ```rust
@@ -691,6 +693,128 @@ module book::hero {
 
 
 
+### Visibility Modifiers
+
+
+
+#### Internal Visibility
+
+在模块中定义的函数或结构如果没有可见性修饰符，则该模块是*私有的*。不能从其他模块调用它。
+
+
+
+
+
+#### Public Visibility
+
+公共可见
+
+通过在`fun`或`struct`关键字之前添加`public`关键字，可以使结构或函数成为*公共的*。
+
+
+
+```rust
+module book::public_visibility {
+    // This function can be called from other modules
+    public fun public() { /* ... */ }
+}
+```
+
+一个公共函数可以从其他模块导入和调用。
+
+```rust
+module book::try_calling_public {
+    use book::public_visibility;
+
+    // Different module -> can call public()
+    fun try_calling_public() {
+        public_visibility::public();
+    }
+}
+```
+
+
+
+#### Package Visibility
+
+Move 2024引入了*包可见性*修改器。具有*包可见性*的函数可以从同一个包中的任何模块调用。不能从其他包调用它。
+
+```rust
+module book::package_visibility {
+    public(package) fun package_only() { /* ... */ }
+}
+
+//可以从同一个包中的任何模块调用包函数：
+module book::try_calling_package {
+    use book::package_visibility;
+
+    // Same package `book` -> can call package_only()
+    fun try_calling_package() {
+        package_visibility::package_only();
+    }
+}
+```
+
+
+
+### Ownership and Scope
+
+作用域和生命周期
+
+作用域是变量有效的代码范围，所有者是此变量所属的作用域。一旦所有者作用域结束，变量将被删除。这是Move中的一个基本概念，了解它的工作原理非常重要。
+
+
+
+
+
+### Abilities: Copy
+
+
+
+```rust
+public struct Copyable has copy {}
+
+```
+
+
+
+Types with the copy
+
+- bool
+- unsigned integers
+- vector
+- address
+
+
+
+All of the types defined in the standard library
+
+- Option
+- String
+- TypeName
+
+
+
+### References
+
+引用
+
+`&mut`引用允许改变值，并且函数可以花费这些费用。
+
+```rust
+    /// Use the metro pass card at the turnstile to enter the metro.
+    public fun enter_metro(card: &mut Card) {
+        assert!(card.uses > 0, ENoUses);
+        card.uses = card.uses - 1;
+    }
+```
+
+
+
+
+
+
+
 
 
 ### Generics
@@ -713,4 +837,76 @@ module 0x42::example {
   }
 }
 ```
+
+
+
+
+
+
+
+
+
+### Type Reflection
+
+
+
+类型反射在标准库模块std：：type_name中实现。简单地说，它给出了一个函数get<T>（），该函数返回类型T的名称。
+
+```rust
+module book::type_reflection {
+    use std::ascii::String;
+    use std::type_name::{Self, TypeName};
+
+    /// A function that returns the name of the type `T` and its module and address.
+    public fun do_i_know_you<T>(): (String, String, String) {
+        let type_name: TypeName = type_name::get<T>();
+
+        // there's a way to borrow
+        let str: &String = type_name.borrow_string();
+
+        let module_name: String = type_name.get_module();
+        let address_str: String = type_name.get_address();
+
+        // and a way to consume the value
+        let str = type_name.into_string();
+
+        (str, module_name, address_str)
+    }
+
+    #[test_only]
+    public struct MyType {}
+
+    #[test]
+    fun test_type_reflection() {
+        let (type_name, module_name, _address_str) = do_i_know_you<MyType>();
+
+        //
+        assert!(module_name == b"type_reflection".to_ascii_string(), 1);
+    }
+}
+```
+
+
+
+
+
+## Aptos Stdlib
+
+
+
+### Account
+
+账户模块
+
+```rust
+module MyModule {
+    use aptos_framework::account;
+
+    public fun create_account(addr: address) {
+        account::create_account(addr);
+    }
+}
+```
+
+
 
