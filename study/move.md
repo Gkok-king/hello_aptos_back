@@ -910,3 +910,52 @@ module MyModule {
 
 
 
+
+
+
+
+## Object  model
+
+对象模型
+
+它通过将资源（resources）和模块（modules）作为不可变和安全的对象，使得智能合约编写和执行更加安全和高效
+
+
+
+### resources
+
+- 资源的唯一性：每个资源都是唯一的，且只能存在一个实例。资源的类型必须用 has key 标注，保证资源的存储与管理符合区块链上的严格约束。
+- 资源的不可复制性：资源对象无法复制，这意味着如果资源被转移，它不再存在于原来的位置。这保证了资产不会被意外地复制或复制攻击。
+- 资源的所有权：资源总是由某个账户拥有，只有该账户可以访问和操控它。通过 Move 的 signer 类型，可以限制某些操作只能由特定账户来执行。
+
+```move
+module stdlibDemo::ResourceExample {
+    // 定义一个资源类型
+    struct MyResource has key {
+        value: u64,
+    }
+
+    // 创建资源并将其存储在调用者账户下
+    public fun create_resource(account: &signer, value: u64) {
+        move_to(account, MyResource { value });
+    }
+
+    // 获取资源的值
+    public fun get_resource_value(account: address): u64 {
+        let resource = borrow_global<MyResource>(account);
+        resource.value
+    }
+
+    // 销毁资源
+    public fun destroy_resource(account: &signer) {
+        let resource = move_from<MyResource>(signer::address_of(account));
+        // 销毁资源
+        destroy resource;
+    }
+}
+```
+
+
+
+
+
